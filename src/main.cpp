@@ -2,7 +2,7 @@
 #include "Honeywell_ABP.h"
 
 #define LED 4
-#define Pump 5
+#define Pump 3
 unsigned long currentTime;
 unsigned long refTime;
 int low_time;
@@ -49,14 +49,14 @@ void setup() {
    TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
    TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
 
-   analogWrite(Pump, 60);
+   analogWrite(Pump, 43);
 }
 
 
 void loop() {
   // update sensor reading
   abp.update();
- // Serial.println(abp.pressure());
+  //Serial.println(abp.pressure());
   //Serial.println(Pressure_print());
   switch(current_state)
   {
@@ -75,8 +75,9 @@ void loop() {
       Serial.println("--");
       if(millis() - low_time >= coag_time)
       {
-        Serial.println(low_time);
+        Serial.println(abp.pressure());
         digitalWrite(LED, HIGH);
+        analogWrite(Pump, 0);
       }
       if (abp.pressure() < Pressure_limit)
       {
