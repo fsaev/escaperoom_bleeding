@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include "Honeywell_ABP.h"
 
-#define LED 4
 #define Pump 3
+#define LED_G 4
+#define LED_Y 5
 unsigned long currentTime;
 unsigned long refTime;
 int low_time;
@@ -31,8 +32,25 @@ float Pressure_print() {
   return Pressure;
 }
 
+void LED_G_ON() {
+  digitalWrite(LED_G, HIGH);
+}
+
+void LED_G_OFF() {
+  digitalWrite(LED_G, LOW);
+}
+
+void LED_Y_ON() {
+  digitalWrite(LED_Y, HIGH);
+}
+
+void LED_Y_OFF() {
+  digitalWrite(LED_Y, LOW);
+}
+
 void setup() {
-   pinMode(LED, OUTPUT);
+   pinMode(LED_G, OUTPUT);
+   pinMode(LED_Y, OUTPUT);
    Serial.begin(9600);
    currentTime = millis();
    STATE current_state{INIT};
@@ -40,10 +58,6 @@ void setup() {
    Wire.begin();
    Serial.println("Ready");
    pinMode(Pump, OUTPUT);
-   //TCA0.SINGLE.CTRLA &= ~TCA_SINGLE_ENABLE_bm;// Turn off timer while we change parameters.
-   //TCA0.SINGLE.CTRLA &= ~TCA_SINGLE_CLKSEL_gm;// Clear all CLKSEL bits.
-   //TCA0.SINGLE.CTRLA |= TCA_SINGLE_CLKSEL_DIV2_gc;// Set prescaler to 2.
-   //TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz.
    TCB1.CTRLA &= ~TCB_ENABLE_bm;// Turn off timer while we change parameters.
    TCB1.CTRLA &= ~TCB_CLKSEL_gm;// Clear all CLKSEL bits.
    TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
@@ -56,7 +70,7 @@ void setup() {
 void loop() {
   // update sensor reading
   abp.update();
-  //Serial.println(abp.pressure());
+  Serial.println(abp.pressure());
   //Serial.println(Pressure_print());
   switch(current_state)
   {
@@ -72,11 +86,13 @@ void loop() {
     
     case (Low_flow):
       //Serial.println("Low flow");
-      Serial.println("--");
+      LED_G_ON();
+      LED_Y_OFF();
       if(millis() - low_time >= coag_time)
       {
         Serial.println(abp.pressure());
-        digitalWrite(LED, HIGH);
+        LED_G_ON();
+        LED_Y_ON();
         analogWrite(Pump, 0);
       }
       if (abp.pressure() < Pressure_limit)
@@ -89,7 +105,8 @@ void loop() {
       
     case (High_flow):
       //Serial.println("High flow");
-      Serial.println("*");
+      LED_Y_ON();
+      LED_G_OFF();
       if (abp.pressure() > Pressure_limit)
       {
         last_time = millis();
