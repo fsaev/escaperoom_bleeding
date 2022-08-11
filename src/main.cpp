@@ -131,6 +131,7 @@ void loop() {
         LED_Y_OFF();
         LED_R_OFF();
         analogWrite(Pump, 0);
+        while(true);
       }
       if (abp.pressure() < Pressure_limit)
       {
