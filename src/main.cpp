@@ -99,7 +99,7 @@ void setup() {
    TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
    TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
 
-   analogWrite(Pump, 45);
+   analogWrite(Pump, 40);
 }
 
 
