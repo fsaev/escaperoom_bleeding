@@ -4,9 +4,11 @@
 #define Pump 3
 #define LED_G 4
 #define LED_Y 5
+#define LED_R 6
 unsigned long currentTime;
 unsigned long refTime;
 unsigned long printTime;
+unsigned long RedBlinkTime;
 int low_time;
 int last_time;
 float Pressure_limit = 150;
@@ -25,6 +27,7 @@ Honeywell_ABP abp(
 float Pressure_print() {
   currentTime = millis();
   refTime = currentTime;
+  RedBlinkTime = currentTime;
   if(currentTime - refTime >= 1000)
   {
     Pressure = abp.pressure();
@@ -49,6 +52,27 @@ void LED_Y_OFF() {
   digitalWrite(LED_Y, LOW);
 }
 
+void LED_R_ON() {
+  digitalWrite(LED_R, HIGH);
+}
+
+void LED_R_OFF() {
+  digitalWrite(LED_R, LOW);
+}
+
+void LED_R_Blink() {
+  LED_R_OFF();
+  if(millis() - RedBlinkTime > 250)
+  {
+    LED_R_ON();
+    if(millis() - RedBlinkTime > 500)
+    {
+      LED_R_OFF();
+      RedBlinkTime = millis();
+    }
+  }
+}
+
 void PrintVal() {
   if (millis() - printTime > 250)
   {
@@ -61,6 +85,7 @@ void PrintVal() {
 void setup() {
    pinMode(LED_G, OUTPUT);
    pinMode(LED_Y, OUTPUT);
+   pinMode(LED_R, OUTPUT);
    Serial.begin(9600);
    currentTime = millis();
    printTime = millis();
@@ -96,13 +121,15 @@ void loop() {
     
     case (Low_flow):
       //Serial.println("Low flow");
-      LED_G_ON();
-      LED_Y_OFF();
+      LED_G_OFF();
+      LED_Y_ON();
+      LED_R_OFF();
       if(millis() - low_time >= coag_time)
       {
         Serial.println(abp.pressure());
         LED_G_ON();
-        LED_Y_ON();
+        LED_Y_OFF();
+        LED_R_OFF();
         analogWrite(Pump, 0);
       }
       if (abp.pressure() < Pressure_limit)
@@ -115,8 +142,9 @@ void loop() {
       
     case (High_flow):
       //Serial.println("High flow");
-      LED_Y_ON();
       LED_G_OFF();
+      LED_Y_OFF();
+      LED_R_Blink();
       if (abp.pressure() > Pressure_limit)
       {
         last_time = millis();
