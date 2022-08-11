@@ -6,12 +6,13 @@
 #define LED_Y 5
 unsigned long currentTime;
 unsigned long refTime;
+unsigned long printTime;
 int low_time;
 int last_time;
 float Pressure_limit = 150;
 float Pressure;
 enum STATE {INIT, Low_flow, High_flow}; // Enumerator for system states
-int coag_time = 15000;
+int coag_time = 10000;
 STATE current_state{INIT};
 
 Honeywell_ABP abp(
@@ -48,11 +49,21 @@ void LED_Y_OFF() {
   digitalWrite(LED_Y, LOW);
 }
 
+void PrintVal() {
+  if (millis() - printTime > 250)
+  {
+    Serial.println(abp.pressure());
+    printTime = millis();
+  }
+
+}
+
 void setup() {
    pinMode(LED_G, OUTPUT);
    pinMode(LED_Y, OUTPUT);
    Serial.begin(9600);
    currentTime = millis();
+   printTime = millis();
    STATE current_state{INIT};
    // open I2C communication
    Wire.begin();
@@ -63,15 +74,14 @@ void setup() {
    TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
    TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
 
-   analogWrite(Pump, 43);
+   analogWrite(Pump, 45);
 }
 
 
 void loop() {
   // update sensor reading
   abp.update();
-  Serial.println(abp.pressure());
-  //Serial.println(Pressure_print());
+  PrintVal();
   switch(current_state)
   {
     case (INIT):
