@@ -11,7 +11,7 @@ unsigned long printTime;
 unsigned long RedBlinkTime;
 int low_time;
 int last_time;
-float Pressure_limit = 150;
+float Pressure_limit = 100;
 float Pressure;
 enum STATE {INIT, Low_flow, High_flow}; // Enumerator for system states
 int coag_time = 10000;
@@ -99,7 +99,7 @@ void setup() {
    TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
    TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
 
-   analogWrite(Pump, 40);
+   analogWrite(Pump, 43);
 }
 
 
