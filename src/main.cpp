@@ -5,6 +5,8 @@
 #define LED_G 4
 #define LED_Y 5
 #define LED_R 6
+#define StartPushButton 7
+#define ResetPushButton 8
 unsigned long currentTime;
 unsigned long refTime;
 unsigned long printTime;
@@ -109,35 +111,42 @@ void PrintVal() {
 }
 
 void setup() {
-   pinMode(LED_G, OUTPUT);
-   pinMode(LED_Y, OUTPUT);
-   pinMode(LED_R, OUTPUT);
-   Serial.begin(9600);
-   currentTime = millis();
-   printTime = millis();
-   STATE current_state{INIT};
-   // open I2C communication
-   Wire.begin();
-   Serial.println("Ready");
-   pinMode(Pump, OUTPUT);
-   TCB1.CTRLA &= ~TCB_ENABLE_bm;// Turn off timer while we change parameters.
-   TCB1.CTRLA &= ~TCB_CLKSEL_gm;// Clear all CLKSEL bits.
-   TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
-   TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
+  Serial.begin(9600);
+  pinMode(LED_G, OUTPUT);
+  pinMode(LED_Y, OUTPUT);
+  pinMode(LED_R, OUTPUT);
+  pinMode(StartPushButton, INPUT_PULLUP);
+  pinMode(ResetPushButton, INPUT_PULLUP);
+  currentTime = millis();
+  printTime = millis();
+  STATE current_state{INIT};
+  // open I2C communication
+  Wire.begin();
+  Serial.println("Ready");
+  pinMode(Pump, OUTPUT);
+  TCB1.CTRLA &= ~TCB_ENABLE_bm;// Turn off timer while we change parameters.
+  TCB1.CTRLA &= ~TCB_CLKSEL_gm;// Clear all CLKSEL bits.
+  TCB1.CTRLA |= TCB_CLKSEL_CLKDIV1_gc;// Set prescaler to 2.
+  TCB1.CTRLA |= TCB_ENABLE_bm;// Re-enable timer. Pins 5 and 9 now run at 31.25 kHz
 
-   analogWrite(Pump, 43);
+  analogWrite(Pump, 43);
 }
+
 
 
 void loop() {
   // update sensor reading
+  analogWrite(Pump, 43);
   abp.update();
   PrintVal();
+  
   switch(current_state)
   {
     case (INIT):
-    Serial.println("INIT");
-    if (abp.pressure() < Pressure_limit)
+    analogWrite(Pump, 0);
+    Serial.println("Start?");
+    //if (abp.pressure() < Pressure_limit)
+    if (digitalRead(StartPushButton) == false)
     {
       current_state = High_flow;
       last_time = millis(); 
