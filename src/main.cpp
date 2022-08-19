@@ -36,6 +36,8 @@ float Pressure_print() {
   return Pressure;
 }
 
+//LED signals
+
 void LED_G_ON() {
   digitalWrite(LED_G, HIGH);
 }
@@ -60,7 +62,10 @@ void LED_R_OFF() {
   digitalWrite(LED_R, LOW);
 }
 
-void LED_R_Blink() {
+// LED signal functions
+
+void LED_R_Blink() 
+{
   LED_R_OFF();
   if(millis() - RedBlinkTime > 250)
   {
@@ -71,6 +76,27 @@ void LED_R_Blink() {
       RedBlinkTime = millis();
     }
   }
+}
+
+void LED_bleeding() 
+{
+  LED_G_OFF();
+  LED_Y_OFF();
+  LED_R_Blink();
+}
+
+void LED_pressureOK() 
+{
+  LED_G_OFF();
+  LED_Y_ON();
+  LED_R_OFF();
+}
+
+void LED_bleeding_Stopped() 
+{
+  LED_G_ON();
+  LED_Y_OFF();
+  LED_R_OFF();
 }
 
 void PrintVal() {
@@ -121,15 +147,12 @@ void loop() {
     
     case (Low_flow):
       //Serial.println("Low flow");
-      LED_G_OFF();
-      LED_Y_ON();
-      LED_R_OFF();
+      LED_pressureOK();
+
       if(millis() - low_time >= coag_time)
       {
         Serial.println(abp.pressure());
-        LED_G_ON();
-        LED_Y_OFF();
-        LED_R_OFF();
+        LED_bleeding_Stopped();
         analogWrite(Pump, 0);
         while(true);
       }
@@ -143,9 +166,7 @@ void loop() {
       
     case (High_flow):
       //Serial.println("High flow");
-      LED_G_OFF();
-      LED_Y_OFF();
-      LED_R_Blink();
+      LED_bleeding();
       if (abp.pressure() > Pressure_limit)
       {
         last_time = millis();
