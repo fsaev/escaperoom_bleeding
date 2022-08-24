@@ -172,6 +172,7 @@ void loop() {
       {
         LED_bleeding_Stopped();
         analogWrite(Pump, 0);
+        //Inf loop for stopping the code from running
         while(true);
       }
       if (abp.pressure() < Pressure_limit)
